@@ -1,0 +1,79 @@
+<h2>Todos Page</h2>
+
+{{#if todos.length}}
+    <ul>
+        {{#each todos}}
+            <li class="row">
+                <label>
+                    {{#if completed}}
+                        <input type="checkbox" checked name="completed">
+                        <span class="completed">{{title}}</span>
+                    {{else}}
+                        <input type="checkbox" name="completed">
+                        <span></span>
+                        <div class="title" style="display: inline-block;">{{this.title}}</div>
+                    {{/if}}
+                    <input type="hidden" value="{{this._id}}" name="id">
+                    <button class="btn btn-small" data-action="save">Save</button>
+                    <button class="btn btn-small red darken-2" data-action="remove">Remove</button>
+                </label>
+            </li>
+        {{/each}}
+    </ul>
+{{else}}
+    <p>Todos is empty </p>
+{{/if}}
+<script>
+    document.addEventListener('click', (e) => {
+      const target = e.target;
+      const action = target.dataset.action;
+
+      if (action) {
+          const row = target.closest('.row');
+          const id = row.querySelector('[name="id"]').value;
+          const completed = row.querySelector('[name="completed"]').checked;
+
+          startAction({
+              action,
+              id,
+              completed
+          });
+      }
+    });
+
+    function startAction(actionConfig) {
+      const actionName = actionConfig.action;
+      if (actionName === 'save') {
+        save(actionConfig);
+      } else if (actionName) {
+        remove(actionConfig);
+      }
+    }
+
+    async function save({id, completed}) {
+        await post('/save', {
+            id,
+            completed
+        });
+        reloadPage();
+    }
+    async function remove({id}) {
+        await post('/remove', {
+            id
+        });
+        reloadPage();
+    }
+
+    function post(url, body) {
+        return fetch(url, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json;charset=utf-8'
+            },
+            body: JSON.stringify(body)
+        });
+    }
+    function reloadPage() {
+        location.reload();
+    }
+</script>
